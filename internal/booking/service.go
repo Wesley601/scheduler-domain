@@ -33,38 +33,51 @@ func NewBookingService(bookingRepository BookingRepository, scheduleRepository S
 	}
 }
 
-func (useCase *BookingService) Book(sID string, b core.Booking, s core.Service) error {
-	schedule, err := useCase.scheduleRepository.FindByID(sID)
+type CreateBookingDTO struct {
+	AgendaID string
+	Window   core.Window
+	Service  core.Service
+}
+
+func (useCase *BookingService) Book(dto CreateBookingDTO) (Parser, error) {
+	var parser Parser
+	schedule, err := useCase.scheduleRepository.FindByID(dto.AgendaID)
 	if err != nil {
-		return err
+		return parser, err
 	}
 
-	fits, err := schedule.Fits(b, s)
+	b := core.Booking{
+		Window: dto.Window,
+	}
+
+	fits, err := schedule.Fits(b, dto.Service)
 	if err != nil {
-		return err
+		return parser, err
 	}
 
 	if !fits {
-		return fmt.Errorf("booking does not fit in schedule")
+		return parser, fmt.Errorf("booking does not fit in schedule")
 	}
 
 	available, err := useCase.bookingRepository.IsAvailable(b.Window)
 	if err != nil {
-		return err
+		return parser, err
 	}
 
 	if !available {
-		return fmt.Errorf("already booked")
+		return parser, fmt.Errorf("already booked")
 	}
 
 	available, err = useCase.blockRepository.IsAvailable(b.Window)
 	if err != nil {
-		return err
+		return parser, err
 	}
 
 	if !available {
-		return fmt.Errorf("blocked")
+		return parser, fmt.Errorf("blocked")
 	}
 
-	return useCase.bookingRepository.Save(b)
+	err = useCase.bookingRepository.Save(b)
+
+	return parser, err
 }

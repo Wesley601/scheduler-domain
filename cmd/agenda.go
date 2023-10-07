@@ -6,6 +6,8 @@ package cmd
 import (
 	"fmt"
 
+	mongodb "go.mongodb.org/mongo-driver/mongo"
+
 	"alinea.com/internal/agenda"
 	"alinea.com/pkg/mongo"
 	"alinea.com/pkg/utils"
@@ -14,6 +16,7 @@ import (
 
 var c *string
 var g *string
+var l *bool
 
 // agendaCmd represents the agenda command
 var agendaCmd = &cobra.Command{
@@ -21,8 +24,10 @@ var agendaCmd = &cobra.Command{
 	Short: "handle the providers agendas",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+		var parser agenda.Parser
+
 		if *c != "" {
-			parser, err := agenda.FromJSON([]byte(*c))
+			parser, err := parser.FromJSON([]byte(*c))
 			if err != nil {
 				panic(err)
 			}
@@ -49,7 +54,27 @@ var agendaCmd = &cobra.Command{
 		}
 
 		if *g != "" {
-			s, err := agendaService.FindById(*g)
+			s, err := agendaService.FindByID(*g)
+
+			if err == mongodb.ErrNoDocuments {
+				fmt.Println("agenda not found")
+				return
+			}
+
+			if err != nil {
+				panic(err)
+			}
+
+			j, err := s.ToJSON()
+			if err != nil {
+				panic(err)
+			}
+
+			fmt.Println(string(j))
+		}
+
+		if *l {
+			s, err := agendaService.List()
 			if err != nil {
 				panic(err)
 			}
@@ -74,4 +99,6 @@ func init() {
 
 	c = agendaCmd.Flags().StringP("create", "c", "", "create a new agenda")
 	g = agendaCmd.Flags().StringP("get", "g", "", "get a agenda by id")
+	l = agendaCmd.Flags().BoolP("list", "l", false, "list all agendas")
+	agendaCmd.Flags().Lookup("list").NoOptDefVal = "true"
 }

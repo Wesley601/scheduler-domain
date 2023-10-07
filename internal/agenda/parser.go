@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"alinea.com/internal/core"
+	"alinea.com/pkg/utils"
 )
 
 type Slot struct {
@@ -18,11 +19,76 @@ type AgendaJSON struct {
 	Slots []Slot `json:"slots"`
 }
 
+type ListAgendaJSON struct {
+	Data []AgendaJSON `json:"data"`
+}
+
+type ListParser struct {
+	agendas []core.Agenda
+}
+
+func (p ListParser) FromAgenda(a ListAgendaJSON) (ListParser, error) {
+	var parser ListParser
+
+	for _, a := range a.Data {
+		parser.agendas = append(parser.agendas, utils.Must(assembleAgenda(a.Name, a.Slots)))
+	}
+
+	return parser, nil
+}
+
+func (p ListParser) FromJSON(b []byte) (ListParser, error) {
+	var a ListAgendaJSON
+
+	err := json.Unmarshal(b, &a)
+	if err != nil {
+		return ListParser{}, err
+	}
+
+	return p.FromAgenda(a)
+}
+
+func (p *ListParser) ToJSON() ([]byte, error) {
+	a, err := p.ToJSONStruct()
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return json.MarshalIndent(a, "", "  ")
+}
+
+func (p *ListParser) ToAgenda() ([]core.Agenda, error) {
+	return p.agendas, nil
+}
+
+func (p *ListParser) ToJSONStruct() ([]AgendaJSON, error) {
+
+	var listAgenda []AgendaJSON
+
+	for _, agenda := range p.agendas {
+		var slots []Slot
+		for _, slot := range agenda.Slots {
+			slots = append(slots, Slot{
+				Weekday: slot.Weekday,
+				StartAt: string(slot.StartAt),
+				EndsAt:  string(slot.EndsAt),
+			})
+		}
+
+		listAgenda = append(listAgenda, AgendaJSON{
+			Name:  agenda.Name,
+			Slots: slots,
+		})
+	}
+
+	return listAgenda, nil
+}
+
 type Parser struct {
 	agenda core.Agenda
 }
 
-func FromJSON(b []byte) (Parser, error) {
+func (p Parser) FromJSON(b []byte) (Parser, error) {
 	var a AgendaJSON
 
 	err := json.Unmarshal(b, &a)
@@ -30,26 +96,13 @@ func FromJSON(b []byte) (Parser, error) {
 		return Parser{}, err
 	}
 
-	return FromAgenda(a)
+	return p.FromAgenda(a)
 }
 
-func FromAgenda(a AgendaJSON) (Parser, error) {
+func (p Parser) FromAgenda(a AgendaJSON) (Parser, error) {
 	var parser Parser
-	var slots []core.Slot
 
-	for _, slot := range a.Slots {
-		s, err := core.NewSlot(slot.Weekday, core.SlotTime(slot.StartAt), core.SlotTime(slot.EndsAt))
-		if err != nil {
-			return parser, err
-		}
-
-		slots = append(slots, s)
-	}
-
-	parser.agenda = core.Agenda{
-		Name:  a.Name,
-		Slots: slots,
-	}
+	parser.agenda = utils.Must(assembleAgenda(a.Name, a.Slots))
 
 	return parser, nil
 }
@@ -82,4 +135,21 @@ func (p *Parser) ToJSONStruct() (AgendaJSON, error) {
 		Name:  p.agenda.Name,
 		Slots: slots,
 	}, nil
+}
+
+func assembleAgenda(name string, slots []Slot) (core.Agenda, error) {
+	var a core.Agenda
+
+	a.Name = name
+
+	for _, slot := range slots {
+		s, err := core.NewSlot(slot.Weekday, core.SlotTime(slot.StartAt), core.SlotTime(slot.EndsAt))
+		if err != nil {
+			return core.Agenda{}, err
+		}
+
+		a.Slots = append(a.Slots, s)
+	}
+
+	return a, nil
 }

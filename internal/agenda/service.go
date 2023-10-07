@@ -9,15 +9,16 @@ import (
 type AgendaRepository interface {
 	FindByID(id string) (core.Agenda, error)
 	Save(s core.Agenda) error
+	List() ([]core.Agenda, error)
 }
 
 type AgendaService struct {
 	agendaRepository AgendaRepository
 }
 
-func NewAgendaService(scheduleRepository AgendaRepository) *AgendaService {
+func NewAgendaService(agendaRepository AgendaRepository) *AgendaService {
 	return &AgendaService{
-		agendaRepository: scheduleRepository,
+		agendaRepository: agendaRepository,
 	}
 }
 
@@ -58,28 +59,39 @@ func (useCase *AgendaService) Create(dto CreateAgendaDTO) (Parser, error) {
 		slots = append(slots, s)
 	}
 
-	schedule := core.NewAgenda(dto.Name, slots)
+	agenda := core.NewAgenda(dto.Name, slots)
 
-	if err := useCase.agendaRepository.Save(*schedule); err != nil {
+	if err := useCase.agendaRepository.Save(*agenda); err != nil {
 		return Parser{}, err
 	}
 
 	parser := Parser{
-		agenda: *schedule,
+		agenda: *agenda,
 	}
 
 	return parser, nil
 }
 
-func (useCase *AgendaService) FindById(id string) (Parser, error) {
-	schedule, err := useCase.agendaRepository.FindByID(id)
+func (useCase *AgendaService) FindByID(id string) (Parser, error) {
+	agenda, err := useCase.agendaRepository.FindByID(id)
 	if err != nil {
 		return Parser{}, err
 	}
 
 	parser := Parser{
-		agenda: schedule,
+		agenda: agenda,
 	}
 
 	return parser, nil
+}
+
+func (useCase *AgendaService) List() (ListParser, error) {
+	agenda, err := useCase.agendaRepository.List()
+	if err != nil {
+		return ListParser{}, err
+	}
+
+	return ListParser{
+		agendas: agenda,
+	}, nil
 }
