@@ -7,19 +7,19 @@ import (
 	"alinea.com/pkg/utils"
 )
 
-type Schedule struct {
+type Agenda struct {
 	Name  string
 	Slots []Slot
 }
 
-func NewSchedule(name string, slots []Slot) *Schedule {
-	return &Schedule{
+func NewAgenda(name string, slots []Slot) *Agenda {
+	return &Agenda{
 		Name:  name,
 		Slots: slots,
 	}
 }
 
-func (s *Schedule) ListAvailableSlots(w Window, sv Service) (ws []Window, err error) {
+func (s *Agenda) ListAvailableSlots(w Window, sv Service) (ws []Window, err error) {
 	startAt := w.From
 	endsAt := w.To
 
@@ -48,7 +48,7 @@ func (s *Schedule) ListAvailableSlots(w Window, sv Service) (ws []Window, err er
 	return
 }
 
-func (s *Schedule) Fits(b Booking, sv Service) (bool, error) {
+func (s *Agenda) Fits(b Booking, sv Service) (bool, error) {
 	if !sv.Fits(b.Window) {
 		return false, fmt.Errorf("invalid booking duration")
 	}

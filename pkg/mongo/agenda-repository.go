@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type ScheduleRepository struct {
+type AgendaRepository struct {
 	coll *mongo.Collection
 }
 
@@ -21,28 +21,28 @@ type Slot struct {
 	EndsAt  string
 }
 
-type Schedule struct {
+type Agenda struct {
 	ID    primitive.ObjectID `bson:"_id"`
 	Name  string             `bson:"name"`
 	Slots []Slot             `bson:"slots"`
 }
 
-func NewScheduleRepository(client *mongo.Client) *ScheduleRepository {
-	return &ScheduleRepository{
-		coll: client.Database("alinea").Collection("schedules"),
+func NewAgendaRepository(client *mongo.Client) *AgendaRepository {
+	return &AgendaRepository{
+		coll: client.Database("alinea").Collection("agendas"),
 	}
 }
 
-func (r *ScheduleRepository) FindByID(id string) (core.Schedule, error) {
-	var s Schedule
+func (r *AgendaRepository) FindByID(id string) (core.Agenda, error) {
+	var s Agenda
 
 	err := r.coll.FindOne(context.TODO(), bson.D{{Key: "_id", Value: utils.Must(primitive.ObjectIDFromHex(id))}}).Decode(&s)
 
 	if err != nil {
-		return core.Schedule{}, err
+		return core.Agenda{}, err
 	}
 
-	return core.Schedule{
+	return core.Agenda{
 		Name: s.Name,
 		Slots: func() []core.Slot {
 			var slots []core.Slot
@@ -56,7 +56,7 @@ func (r *ScheduleRepository) FindByID(id string) (core.Schedule, error) {
 	}, nil
 }
 
-func (r *ScheduleRepository) Save(s core.Schedule) error {
+func (r *AgendaRepository) Save(s core.Agenda) error {
 	var slots []Slot
 
 	for _, slot := range s.Slots {
@@ -67,7 +67,7 @@ func (r *ScheduleRepository) Save(s core.Schedule) error {
 		})
 	}
 
-	sToSave := Schedule{
+	sToSave := Agenda{
 		ID:    primitive.NewObjectID(),
 		Name:  s.Name,
 		Slots: slots,

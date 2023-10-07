@@ -15,8 +15,8 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "schedule",
-	Short: "schedule domain as a cli application",
+	Use:   "scheduler",
+	Short: "scheduler domain as a cli application",
 	Long:  ``,
 	// Run: func(cmd *cobra.Command, args []string) { },
 }

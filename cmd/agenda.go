@@ -6,7 +6,7 @@ package cmd
 import (
 	"fmt"
 
-	"alinea.com/internal/schedule"
+	"alinea.com/internal/agenda"
 	"alinea.com/pkg/mongo"
 	"alinea.com/pkg/utils"
 	"github.com/spf13/cobra"
@@ -14,7 +14,6 @@ import (
 
 var c *string
 var g *string
-var parser *schedule.Parser
 
 // agendaCmd represents the agenda command
 var agendaCmd = &cobra.Command{
@@ -23,23 +22,23 @@ var agendaCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		if *c != "" {
-			err := parser.FromJSON([]byte(*c))
+			parser, err := agenda.FromJSON([]byte(*c))
 			if err != nil {
 				panic(err)
 			}
 
-			a, err := parser.ToAgenda()
+			a, err := parser.ToJSONStruct()
 			if err != nil {
 				panic(err)
 			}
 
-			agendaService.Create(schedule.CreateScheduleDTO{
+			agendaService.Create(agenda.CreateAgendaDTO{
 				Name: a.Name,
-				Slots: func() []schedule.CreateSlotDTO {
-					var slots []schedule.CreateSlotDTO
+				Slots: func() []agenda.CreateSlotDTO {
+					var slots []agenda.CreateSlotDTO
 
 					for _, slot := range a.Slots {
-						slots = append(slots, schedule.CreateSlotDTO(slot))
+						slots = append(slots, agenda.CreateSlotDTO(slot))
 					}
 
 					return slots
@@ -65,15 +64,13 @@ var agendaCmd = &cobra.Command{
 	},
 }
 
-var agendaService *schedule.ScheduleService
+var agendaService *agenda.AgendaService
 
 func init() {
 	rootCmd.AddCommand(agendaCmd)
 
-	parser = &schedule.Parser{}
-
-	agendaRepository := mongo.NewScheduleRepository(utils.Must(mongo.NewClient()))
-	agendaService = schedule.NewScheduleService(agendaRepository)
+	agendaRepository := mongo.NewAgendaRepository(utils.Must(mongo.NewClient()))
+	agendaService = agenda.NewAgendaService(agendaRepository)
 
 	c = agendaCmd.Flags().StringP("create", "c", "", "create a new agenda")
 	g = agendaCmd.Flags().StringP("get", "g", "", "get a agenda by id")

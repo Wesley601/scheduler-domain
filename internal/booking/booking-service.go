@@ -12,7 +12,7 @@ type BookingRepository interface {
 }
 
 type ScheduleRepository interface {
-	FindByID(id string) (core.Schedule, error)
+	FindByID(id string) (core.Agenda, error)
 }
 
 type BlockRepository interface {
