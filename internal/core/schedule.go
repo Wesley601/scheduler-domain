@@ -42,7 +42,7 @@ func (s *Schedule) ListAvailableSlots(w Window, sv Service) (ws []Window, err er
 }
 
 func (s *Schedule) Fits(b Booking, sv Service) (bool, error) {
-	if !sv.WindowFits(b.Window) {
+	if !sv.Fits(b.Window) {
 		return false, fmt.Errorf("invalid booking duration")
 	}
 
@@ -58,10 +58,4 @@ func (s *Schedule) Fits(b Booking, sv Service) (bool, error) {
 	}
 
 	return false, nil
-}
-
-type ScheduleService struct {
-	BookingRepository  interface{}
-	ScheduleRepository interface{}
-	BlockRepository    interface{}
 }

@@ -7,6 +7,6 @@ type Service struct {
 	Duration time.Duration
 }
 
-func (s *Service) WindowFits(w Window) bool {
+func (s *Service) Fits(w Window) bool {
 	return w.To.Sub(w.From) == s.Duration
 }
