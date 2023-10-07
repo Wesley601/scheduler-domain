@@ -12,6 +12,13 @@ type Schedule struct {
 	Slots []Slot
 }
 
+func NewSchedule(name string, slots []Slot) *Schedule {
+	return &Schedule{
+		Name:  name,
+		Slots: slots,
+	}
+}
+
 func (s *Schedule) ListAvailableSlots(w Window, sv Service) (ws []Window, err error) {
 	startAt := w.From
 	endsAt := w.To
