@@ -26,10 +26,10 @@ func NewBookingRepository(client *mongo.Client) *BookingRepository {
 	}
 }
 
-func (r *BookingRepository) IsAvailable(w core.Window) (bool, error) {
+func (r *BookingRepository) IsAvailable(c context.Context, w core.Window) (bool, error) {
 	var b Booking
 
-	err := r.coll.FindOne(context.TODO(), bson.D{
+	err := r.coll.FindOne(c, bson.D{
 		{Key: "startAt", Value: w.From},
 		{Key: "endsAt", Value: w.To},
 	}).Decode(&b)
@@ -45,14 +45,14 @@ func (r *BookingRepository) IsAvailable(w core.Window) (bool, error) {
 	return false, nil
 }
 
-func (r *BookingRepository) Save(b core.Booking) error {
+func (r *BookingRepository) Save(c context.Context, b core.Booking) error {
 	bToSave := Booking{
 		ID:      primitive.NewObjectID(),
 		StartAt: b.Window.From,
 		EndsAt:  b.Window.To,
 	}
 
-	_, err := r.coll.InsertOne(context.TODO(), bToSave)
+	_, err := r.coll.InsertOne(c, bToSave)
 
 	return err
 }

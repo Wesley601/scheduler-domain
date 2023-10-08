@@ -27,7 +27,7 @@ func NewBlockRepository(client *mongo.Client) *BlockRepository {
 	}
 }
 
-func (r *BlockRepository) IsAvailable(w core.Window) (bool, error) {
+func (r *BlockRepository) IsAvailable(c context.Context, w core.Window) (bool, error) {
 	var b Block
 
 	err := r.coll.FindOne(context.TODO(), bson.D{
@@ -46,7 +46,7 @@ func (r *BlockRepository) IsAvailable(w core.Window) (bool, error) {
 	return false, nil
 }
 
-func (r *BlockRepository) Save(s core.Block) error {
+func (r *BlockRepository) Save(c context.Context, s core.Block) error {
 	bToSave := Block{
 		ID:      primitive.NewObjectID(),
 		Weekday: s.Weekday,

@@ -4,6 +4,7 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -43,7 +44,7 @@ var bookingCmd = &cobra.Command{
 				panic(err)
 			}
 
-			bookingService.Book(booking.CreateBookingDTO{
+			bookingService.Book(context.Background(), booking.CreateBookingDTO{
 				AgendaID: "1",
 				Window:   w,
 				Service: core.Service{

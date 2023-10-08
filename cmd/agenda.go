@@ -4,6 +4,7 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"context"
 	"fmt"
 
 	mongodb "go.mongodb.org/mongo-driver/mongo"
@@ -37,7 +38,7 @@ var agendaCmd = &cobra.Command{
 				panic(err)
 			}
 
-			agendaService.Create(agenda.CreateAgendaDTO{
+			agendaService.Create(context.Background(), agenda.CreateAgendaDTO{
 				Name: a.Name,
 				Slots: func() []agenda.CreateSlotDTO {
 					var slots []agenda.CreateSlotDTO
@@ -54,7 +55,7 @@ var agendaCmd = &cobra.Command{
 		}
 
 		if *g != "" {
-			s, err := agendaService.FindByID(*g)
+			s, err := agendaService.FindByID(context.Background(), *g)
 
 			if err == mongodb.ErrNoDocuments {
 				fmt.Println("agenda not found")
@@ -74,7 +75,7 @@ var agendaCmd = &cobra.Command{
 		}
 
 		if *l {
-			s, err := agendaService.List()
+			s, err := agendaService.List(context.Background())
 			if err != nil {
 				panic(err)
 			}

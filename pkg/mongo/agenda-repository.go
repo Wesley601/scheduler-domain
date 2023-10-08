@@ -33,10 +33,10 @@ func NewAgendaRepository(client *mongo.Client) *AgendaRepository {
 	}
 }
 
-func (r *AgendaRepository) FindByID(id string) (core.Agenda, error) {
+func (r *AgendaRepository) FindByID(c context.Context, id string) (core.Agenda, error) {
 	var s Agenda
 
-	err := r.coll.FindOne(context.TODO(), bson.D{{Key: "_id", Value: utils.Must(primitive.ObjectIDFromHex(id))}}).Decode(&s)
+	err := r.coll.FindOne(c, bson.D{{Key: "_id", Value: utils.Must(primitive.ObjectIDFromHex(id))}}).Decode(&s)
 
 	if err != nil {
 		return core.Agenda{}, err
@@ -56,15 +56,15 @@ func (r *AgendaRepository) FindByID(id string) (core.Agenda, error) {
 	}, nil
 }
 
-func (r *AgendaRepository) List() ([]core.Agenda, error) {
+func (r *AgendaRepository) List(c context.Context) ([]core.Agenda, error) {
 	var agendas []core.Agenda
 
-	cur, err := r.coll.Find(context.Background(), bson.D{})
+	cur, err := r.coll.Find(c, bson.D{})
 	if err != nil {
 		return []core.Agenda{}, err
 	}
 
-	for cur.Next(context.Background()) {
+	for cur.Next(c) {
 		var s Agenda
 
 		err := cur.Decode(&s)
@@ -89,7 +89,7 @@ func (r *AgendaRepository) List() ([]core.Agenda, error) {
 	return agendas, nil
 }
 
-func (r *AgendaRepository) Save(s core.Agenda) error {
+func (r *AgendaRepository) Save(c context.Context, s core.Agenda) error {
 	var slots []Slot
 
 	for _, slot := range s.Slots {
@@ -106,7 +106,7 @@ func (r *AgendaRepository) Save(s core.Agenda) error {
 		Slots: slots,
 	}
 
-	_, err := r.coll.InsertOne(context.TODO(), sToSave)
+	_, err := r.coll.InsertOne(c, sToSave)
 
 	return err
 }

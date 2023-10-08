@@ -1,15 +1,16 @@
 package agenda
 
 import (
+	"context"
 	"time"
 
 	"alinea.com/internal/core"
 )
 
 type AgendaRepository interface {
-	FindByID(id string) (core.Agenda, error)
-	Save(s core.Agenda) error
-	List() ([]core.Agenda, error)
+	FindByID(c context.Context, id string) (core.Agenda, error)
+	Save(c context.Context, s core.Agenda) error
+	List(c context.Context) ([]core.Agenda, error)
 }
 
 type AgendaService struct {
@@ -22,8 +23,8 @@ func NewAgendaService(agendaRepository AgendaRepository) *AgendaService {
 	}
 }
 
-func (useCase *AgendaService) ListSlots(id string, w core.Window, s core.Service) ([]core.Window, error) {
-	a, err := useCase.agendaRepository.FindByID(id)
+func (useCase *AgendaService) ListSlots(c context.Context, id string, w core.Window, s core.Service) ([]core.Window, error) {
+	a, err := useCase.agendaRepository.FindByID(c, id)
 	if err != nil {
 		return []core.Window{}, err
 	}
@@ -47,7 +48,7 @@ type CreateAgendaDTO struct {
 	Slots []CreateSlotDTO
 }
 
-func (useCase *AgendaService) Create(dto CreateAgendaDTO) (Parser, error) {
+func (useCase *AgendaService) Create(c context.Context, dto CreateAgendaDTO) (Parser, error) {
 	var slots []core.Slot
 
 	for _, slot := range dto.Slots {
@@ -61,7 +62,7 @@ func (useCase *AgendaService) Create(dto CreateAgendaDTO) (Parser, error) {
 
 	agenda := core.NewAgenda(dto.Name, slots)
 
-	if err := useCase.agendaRepository.Save(*agenda); err != nil {
+	if err := useCase.agendaRepository.Save(c, *agenda); err != nil {
 		return Parser{}, err
 	}
 
@@ -72,8 +73,8 @@ func (useCase *AgendaService) Create(dto CreateAgendaDTO) (Parser, error) {
 	return parser, nil
 }
 
-func (useCase *AgendaService) FindByID(id string) (Parser, error) {
-	agenda, err := useCase.agendaRepository.FindByID(id)
+func (useCase *AgendaService) FindByID(c context.Context, id string) (Parser, error) {
+	agenda, err := useCase.agendaRepository.FindByID(c, id)
 	if err != nil {
 		return Parser{}, err
 	}
@@ -85,8 +86,8 @@ func (useCase *AgendaService) FindByID(id string) (Parser, error) {
 	return parser, nil
 }
 
-func (useCase *AgendaService) List() (ListParser, error) {
-	agenda, err := useCase.agendaRepository.List()
+func (useCase *AgendaService) List(c context.Context) (ListParser, error) {
+	agenda, err := useCase.agendaRepository.List(c)
 	if err != nil {
 		return ListParser{}, err
 	}

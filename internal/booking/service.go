@@ -1,22 +1,23 @@
 package booking
 
 import (
+	"context"
 	"fmt"
 
 	"alinea.com/internal/core"
 )
 
 type BookingRepository interface {
-	IsAvailable(w core.Window) (bool, error)
-	Save(b core.Booking) error
+	IsAvailable(c context.Context, w core.Window) (bool, error)
+	Save(c context.Context, b core.Booking) error
 }
 
 type ScheduleRepository interface {
-	FindByID(id string) (core.Agenda, error)
+	FindByID(c context.Context, id string) (core.Agenda, error)
 }
 
 type BlockRepository interface {
-	IsAvailable(w core.Window) (bool, error)
+	IsAvailable(c context.Context, w core.Window) (bool, error)
 }
 
 type BookingService struct {
@@ -39,9 +40,9 @@ type CreateBookingDTO struct {
 	Service  core.Service
 }
 
-func (useCase *BookingService) Book(dto CreateBookingDTO) (Parser, error) {
+func (useCase *BookingService) Book(c context.Context, dto CreateBookingDTO) (Parser, error) {
 	var parser Parser
-	schedule, err := useCase.scheduleRepository.FindByID(dto.AgendaID)
+	schedule, err := useCase.scheduleRepository.FindByID(c, dto.AgendaID)
 	if err != nil {
 		return parser, err
 	}
@@ -59,7 +60,7 @@ func (useCase *BookingService) Book(dto CreateBookingDTO) (Parser, error) {
 		return parser, fmt.Errorf("booking does not fit in schedule")
 	}
 
-	available, err := useCase.bookingRepository.IsAvailable(b.Window)
+	available, err := useCase.bookingRepository.IsAvailable(c, b.Window)
 	if err != nil {
 		return parser, err
 	}
@@ -68,7 +69,7 @@ func (useCase *BookingService) Book(dto CreateBookingDTO) (Parser, error) {
 		return parser, fmt.Errorf("already booked")
 	}
 
-	available, err = useCase.blockRepository.IsAvailable(b.Window)
+	available, err = useCase.blockRepository.IsAvailable(c, b.Window)
 	if err != nil {
 		return parser, err
 	}
@@ -77,7 +78,7 @@ func (useCase *BookingService) Book(dto CreateBookingDTO) (Parser, error) {
 		return parser, fmt.Errorf("blocked")
 	}
 
-	err = useCase.bookingRepository.Save(b)
+	err = useCase.bookingRepository.Save(c, b)
 
 	return parser, err
 }
