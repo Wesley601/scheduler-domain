@@ -42,18 +42,7 @@ func (r *AgendaRepository) FindByID(c context.Context, id string) (core.Agenda, 
 		return core.Agenda{}, err
 	}
 
-	return core.Agenda{
-		Name: s.Name,
-		Slots: func() []core.Slot {
-			var slots []core.Slot
-
-			for _, slot := range s.Slots {
-				slots = append(slots, utils.Must(core.NewSlot(slot.Weekday, core.SlotTime(slot.StartAt), core.SlotTime(slot.EndsAt))))
-			}
-
-			return slots
-		}(),
-	}, nil
+	return assembleAgenda(s), nil
 }
 
 func (r *AgendaRepository) List(c context.Context) ([]core.Agenda, error) {
@@ -72,18 +61,7 @@ func (r *AgendaRepository) List(c context.Context) ([]core.Agenda, error) {
 			return []core.Agenda{}, err
 		}
 
-		agendas = append(agendas, core.Agenda{
-			Name: s.Name,
-			Slots: func() []core.Slot {
-				var slots []core.Slot
-
-				for _, slot := range s.Slots {
-					slots = append(slots, utils.Must(core.NewSlot(slot.Weekday, core.SlotTime(slot.StartAt), core.SlotTime(slot.EndsAt))))
-				}
-
-				return slots
-			}(),
-		})
+		agendas = append(agendas, assembleAgenda(s))
 	}
 
 	return agendas, nil
@@ -101,7 +79,7 @@ func (r *AgendaRepository) Save(c context.Context, s core.Agenda) error {
 	}
 
 	sToSave := Agenda{
-		ID:    primitive.NewObjectID(),
+		ID:    utils.Must(primitive.ObjectIDFromHex(s.ID)),
 		Name:  s.Name,
 		Slots: slots,
 	}
@@ -109,4 +87,21 @@ func (r *AgendaRepository) Save(c context.Context, s core.Agenda) error {
 	_, err := r.coll.InsertOne(c, sToSave)
 
 	return err
+}
+
+func assembleAgenda(s Agenda) core.Agenda {
+	return core.Agenda{
+		ID:   s.ID.Hex(),
+		Name: s.Name,
+		Slots: func() []core.Slot {
+			var slots []core.Slot
+
+			for _, slot := range s.Slots {
+				slots = append(slots, utils.Must(core.NewSlot(slot.Weekday, core.SlotTime(slot.StartAt), core.SlotTime(slot.EndsAt))))
+			}
+
+			return slots
+		}(),
+	}
+
 }

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"alinea.com/internal/core"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type AgendaRepository interface {
@@ -60,7 +61,7 @@ func (useCase *AgendaService) Create(c context.Context, dto CreateAgendaDTO) (Pa
 		slots = append(slots, s)
 	}
 
-	agenda := core.NewAgenda(dto.Name, slots)
+	agenda := core.NewAgenda(primitive.NewObjectID().Hex(), dto.Name, slots)
 
 	if err := useCase.agendaRepository.Save(c, *agenda); err != nil {
 		return Parser{}, err

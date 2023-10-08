@@ -15,6 +15,7 @@ type Slot struct {
 }
 
 type AgendaJSON struct {
+	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Slots []Slot `json:"slots"`
 }
@@ -31,7 +32,7 @@ func (p ListParser) FromAgenda(a ListAgendaJSON) (ListParser, error) {
 	var parser ListParser
 
 	for _, a := range a.Data {
-		parser.agendas = append(parser.agendas, utils.Must(assembleAgenda(a.Name, a.Slots)))
+		parser.agendas = append(parser.agendas, utils.Must(assembleAgenda(a.ID, a.Name, a.Slots)))
 	}
 
 	return parser, nil
@@ -62,7 +63,6 @@ func (p *ListParser) ToAgenda() ([]core.Agenda, error) {
 }
 
 func (p *ListParser) ToJSONStruct() ([]AgendaJSON, error) {
-
 	var listAgenda []AgendaJSON
 
 	for _, agenda := range p.agendas {
@@ -76,6 +76,7 @@ func (p *ListParser) ToJSONStruct() ([]AgendaJSON, error) {
 		}
 
 		listAgenda = append(listAgenda, AgendaJSON{
+			ID:    agenda.ID,
 			Name:  agenda.Name,
 			Slots: slots,
 		})
@@ -102,7 +103,7 @@ func (p Parser) FromJSON(b []byte) (Parser, error) {
 func (p Parser) FromAgenda(a AgendaJSON) (Parser, error) {
 	var parser Parser
 
-	parser.agenda = utils.Must(assembleAgenda(a.Name, a.Slots))
+	parser.agenda = utils.Must(assembleAgenda(a.ID, a.Name, a.Slots))
 
 	return parser, nil
 }
@@ -137,9 +138,10 @@ func (p *Parser) ToJSONStruct() (AgendaJSON, error) {
 	}, nil
 }
 
-func assembleAgenda(name string, slots []Slot) (core.Agenda, error) {
+func assembleAgenda(id, name string, slots []Slot) (core.Agenda, error) {
 	var a core.Agenda
 
+	a.ID = id
 	a.Name = name
 
 	for _, slot := range slots {

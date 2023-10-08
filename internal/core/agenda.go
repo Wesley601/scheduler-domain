@@ -8,12 +8,14 @@ import (
 )
 
 type Agenda struct {
+	ID    string
 	Name  string
 	Slots []Slot
 }
 
-func NewAgenda(name string, slots []Slot) *Agenda {
+func NewAgenda(id, name string, slots []Slot) *Agenda {
 	return &Agenda{
+		ID:    id,
 		Name:  name,
 		Slots: slots,
 	}
