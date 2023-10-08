@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"alinea.com/internal/core"
+	"alinea.com/pkg/event"
 )
 
 type BookingRepository interface {
@@ -12,7 +13,7 @@ type BookingRepository interface {
 	Save(c context.Context, b core.Booking) error
 }
 
-type ScheduleRepository interface {
+type AgendaRepository interface {
 	FindByID(c context.Context, id string) (core.Agenda, error)
 }
 
@@ -20,17 +21,23 @@ type BlockRepository interface {
 	IsAvailable(c context.Context, w core.Window) (bool, error)
 }
 
-type BookingService struct {
-	bookingRepository  BookingRepository
-	scheduleRepository ScheduleRepository
-	blockRepository    BlockRepository
+type EventPublisher interface {
+	Notify(e event.Event)
 }
 
-func NewBookingService(bookingRepository BookingRepository, scheduleRepository ScheduleRepository, blockRepository BlockRepository) *BookingService {
+type BookingService struct {
+	bookingRepository BookingRepository
+	agendaRepository  AgendaRepository
+	blockRepository   BlockRepository
+	publisher         EventPublisher
+}
+
+func NewBookingService(bookingRepository BookingRepository, agendaRepository AgendaRepository, blockRepository BlockRepository, publisher EventPublisher) *BookingService {
 	return &BookingService{
-		bookingRepository:  bookingRepository,
-		scheduleRepository: scheduleRepository,
-		blockRepository:    blockRepository,
+		bookingRepository: bookingRepository,
+		agendaRepository:  agendaRepository,
+		blockRepository:   blockRepository,
+		publisher:         publisher,
 	}
 }
 
@@ -42,8 +49,9 @@ type CreateBookingDTO struct {
 
 func (useCase *BookingService) Book(c context.Context, dto CreateBookingDTO) (Parser, error) {
 	var parser Parser
-	schedule, err := useCase.scheduleRepository.FindByID(c, dto.AgendaID)
+	schedule, err := useCase.agendaRepository.FindByID(c, dto.AgendaID)
 	if err != nil {
+		useCase.publisher.Notify(core.BookedErrorEvent{})
 		return parser, err
 	}
 
@@ -53,6 +61,7 @@ func (useCase *BookingService) Book(c context.Context, dto CreateBookingDTO) (Pa
 
 	fits, err := schedule.Fits(b, dto.Service)
 	if err != nil {
+		useCase.publisher.Notify(core.BookedErrorEvent{})
 		return parser, err
 	}
 
@@ -62,6 +71,7 @@ func (useCase *BookingService) Book(c context.Context, dto CreateBookingDTO) (Pa
 
 	available, err := useCase.bookingRepository.IsAvailable(c, b.Window)
 	if err != nil {
+		useCase.publisher.Notify(core.BookedErrorEvent{})
 		return parser, err
 	}
 
@@ -71,6 +81,7 @@ func (useCase *BookingService) Book(c context.Context, dto CreateBookingDTO) (Pa
 
 	available, err = useCase.blockRepository.IsAvailable(c, b.Window)
 	if err != nil {
+		useCase.publisher.Notify(core.BookedErrorEvent{})
 		return parser, err
 	}
 
@@ -79,6 +90,12 @@ func (useCase *BookingService) Book(c context.Context, dto CreateBookingDTO) (Pa
 	}
 
 	err = useCase.bookingRepository.Save(c, b)
+	if err != nil {
+		useCase.publisher.Notify(core.BookedErrorEvent{})
+		return parser, err
+	}
+
+	useCase.publisher.Notify(core.BookedEvent{})
 
 	return parser, err
 }
