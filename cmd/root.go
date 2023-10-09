@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 
+	"alinea.com/internal/agenda"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -29,6 +30,8 @@ func Execute() {
 		os.Exit(1)
 	}
 }
+
+var agendaService *agenda.AgendaService
 
 func init() {
 	cobra.OnInitialize(initConfig)

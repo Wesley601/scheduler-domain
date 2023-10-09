@@ -90,8 +90,6 @@ var agendaCmd = &cobra.Command{
 	},
 }
 
-var agendaService *agenda.AgendaService
-
 func init() {
 	rootCmd.AddCommand(agendaCmd)
 
