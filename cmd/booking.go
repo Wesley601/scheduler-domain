@@ -11,7 +11,6 @@ import (
 	"alinea.com/internal/booking"
 	"alinea.com/internal/core"
 	"alinea.com/pkg/event"
-	"alinea.com/pkg/mongo"
 	"alinea.com/pkg/utils"
 	"github.com/spf13/cobra"
 )
@@ -60,16 +59,8 @@ var bookingCmd = &cobra.Command{
 	},
 }
 
-var bookingService *booking.BookingService
-
 func init() {
 	rootCmd.AddCommand(bookingCmd)
-
-	bookingRepository := mongo.NewBookingRepository(utils.Must(mongo.NewClient()))
-	agendaRepository := mongo.NewAgendaRepository(utils.Must(mongo.NewClient()))
-	blockRepository := mongo.NewBlockRepository(utils.Must(mongo.NewClient()))
-
-	bookingService = booking.NewBookingService(bookingRepository, agendaRepository, blockRepository, createEventPublisher())
 
 	b = bookingCmd.Flags().StringP("book", "b", "", "book an agenda")
 	s = bookingCmd.Flags().StringP("start", "s", "", "book start example: 2023-01-01 10:00:00")

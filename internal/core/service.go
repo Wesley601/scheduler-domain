@@ -3,6 +3,7 @@ package core
 import "time"
 
 type Service struct {
+	ID       string
 	Name     string
 	Duration time.Duration
 }

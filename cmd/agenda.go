@@ -10,8 +10,6 @@ import (
 	mongodb "go.mongodb.org/mongo-driver/mongo"
 
 	"alinea.com/internal/agenda"
-	"alinea.com/pkg/mongo"
-	"alinea.com/pkg/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -92,9 +90,6 @@ var agendaCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(agendaCmd)
-
-	agendaRepository := mongo.NewAgendaRepository(utils.Must(mongo.NewClient()))
-	agendaService = agenda.NewAgendaService(agendaRepository)
 
 	c = agendaCmd.Flags().StringP("create", "c", "", "create a new agenda")
 	g = agendaCmd.Flags().StringP("get", "g", "", "get a agenda by id")

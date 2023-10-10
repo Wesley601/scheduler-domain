@@ -1,6 +1,7 @@
 package core
 
 type Booking struct {
+	ID     string
 	Window Window
 }
 

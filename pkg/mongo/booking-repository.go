@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"alinea.com/internal/core"
+	"alinea.com/pkg/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -47,7 +48,7 @@ func (r *BookingRepository) IsAvailable(c context.Context, w core.Window) (bool,
 
 func (r *BookingRepository) Save(c context.Context, b core.Booking) error {
 	bToSave := Booking{
-		ID:      primitive.NewObjectID(),
+		ID:      utils.Must(primitive.ObjectIDFromHex(b.ID)),
 		StartAt: b.Window.From,
 		EndsAt:  b.Window.To,
 	}

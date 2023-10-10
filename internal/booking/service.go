@@ -6,6 +6,7 @@ import (
 
 	"alinea.com/internal/core"
 	"alinea.com/pkg/event"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type BookingRepository interface {
@@ -56,6 +57,7 @@ func (useCase *BookingService) Book(c context.Context, dto CreateBookingDTO) (Pa
 	}
 
 	b := core.Booking{
+		ID:     primitive.NewObjectID().Hex(),
 		Window: dto.Window,
 	}
 

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"alinea.com/internal/core"
+	"alinea.com/pkg/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -30,7 +31,7 @@ func NewBlockRepository(client *mongo.Client) *BlockRepository {
 func (r *BlockRepository) IsAvailable(c context.Context, w core.Window) (bool, error) {
 	var b Block
 
-	err := r.coll.FindOne(context.TODO(), bson.D{
+	err := r.coll.FindOne(c, bson.D{
 		{Key: "from", Value: w.From},
 		{Key: "to", Value: w.To},
 	}).Decode(&b)
@@ -48,13 +49,13 @@ func (r *BlockRepository) IsAvailable(c context.Context, w core.Window) (bool, e
 
 func (r *BlockRepository) Save(c context.Context, s core.Block) error {
 	bToSave := Block{
-		ID:      primitive.NewObjectID(),
+		ID:      utils.Must(primitive.ObjectIDFromHex(s.ID)),
 		Weekday: s.Weekday,
 		From:    primitive.NewDateTimeFromTime(s.Window.From),
 		To:      primitive.NewDateTimeFromTime(s.Window.To),
 	}
 
-	_, err := r.coll.InsertOne(context.TODO(), bToSave)
+	_, err := r.coll.InsertOne(c, bToSave)
 
 	return err
 }

@@ -4,10 +4,14 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"alinea.com/internal/agenda"
+	"alinea.com/internal/booking"
+	"alinea.com/pkg/mongo"
+	"alinea.com/pkg/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -32,8 +36,18 @@ func Execute() {
 }
 
 var agendaService *agenda.AgendaService
+var bookingService *booking.BookingService
 
 func init() {
+	client := utils.Must(mongo.NewClient(context.Background()))
+
+	bookingRepository := mongo.NewBookingRepository(client)
+	agendaRepository := mongo.NewAgendaRepository(client)
+	blockRepository := mongo.NewBlockRepository(client)
+
+	bookingService = booking.NewBookingService(bookingRepository, agendaRepository, blockRepository, createEventPublisher())
+	agendaService = agenda.NewAgendaService(agendaRepository)
+
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.scheduler.yaml)")
