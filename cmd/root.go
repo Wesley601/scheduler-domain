@@ -44,9 +44,10 @@ func init() {
 	bookingRepository := mongo.NewBookingRepository(client)
 	agendaRepository := mongo.NewAgendaRepository(client)
 	blockRepository := mongo.NewBlockRepository(client)
+	serviceRepository := mongo.NewServiceRepository(client)
 
-	bookingService = booking.NewBookingService(bookingRepository, agendaRepository, blockRepository, createEventPublisher())
-	agendaService = agenda.NewAgendaService(agendaRepository)
+	bookingService = booking.NewBookingService(bookingRepository, agendaRepository, blockRepository, serviceRepository, createEventPublisher())
+	agendaService = agenda.NewAgendaService(agendaRepository, serviceRepository)
 
 	cobra.OnInitialize(initConfig)
 

@@ -14,18 +14,29 @@ type AgendaRepository interface {
 	List(c context.Context) ([]core.Agenda, error)
 }
 
-type AgendaService struct {
-	agendaRepository AgendaRepository
+type ServiceRepository interface {
+	FindByID(c context.Context, id string) (core.Service, error)
 }
 
-func NewAgendaService(agendaRepository AgendaRepository) *AgendaService {
+type AgendaService struct {
+	agendaRepository  AgendaRepository
+	serviceRepository ServiceRepository
+}
+
+func NewAgendaService(agendaRepository AgendaRepository, serviceRepository ServiceRepository) *AgendaService {
 	return &AgendaService{
-		agendaRepository: agendaRepository,
+		agendaRepository:  agendaRepository,
+		serviceRepository: serviceRepository,
 	}
 }
 
-func (useCase *AgendaService) ListSlots(c context.Context, id string, w core.Window, s core.Service) ([]core.Window, error) {
-	a, err := useCase.agendaRepository.FindByID(c, id)
+func (useCase *AgendaService) ListSlots(c context.Context, agendaId, serviceId string, w core.Window) ([]core.Window, error) {
+	a, err := useCase.agendaRepository.FindByID(c, agendaId)
+	if err != nil {
+		return []core.Window{}, err
+	}
+
+	s, err := useCase.serviceRepository.FindByID(c, serviceId)
 	if err != nil {
 		return []core.Window{}, err
 	}

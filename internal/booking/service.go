@@ -18,6 +18,10 @@ type AgendaRepository interface {
 	FindByID(c context.Context, id string) (core.Agenda, error)
 }
 
+type ServiceRepository interface {
+	FindByID(c context.Context, id string) (core.Service, error)
+}
+
 type BlockRepository interface {
 	IsAvailable(c context.Context, w core.Window) (bool, error)
 }
@@ -30,22 +34,30 @@ type BookingService struct {
 	bookingRepository BookingRepository
 	agendaRepository  AgendaRepository
 	blockRepository   BlockRepository
+	serviceRepository ServiceRepository
 	publisher         EventPublisher
 }
 
-func NewBookingService(bookingRepository BookingRepository, agendaRepository AgendaRepository, blockRepository BlockRepository, publisher EventPublisher) *BookingService {
+func NewBookingService(
+	bookingRepository BookingRepository,
+	agendaRepository AgendaRepository,
+	blockRepository BlockRepository,
+	serviceRepository ServiceRepository,
+	publisher EventPublisher,
+) *BookingService {
 	return &BookingService{
 		bookingRepository: bookingRepository,
 		agendaRepository:  agendaRepository,
 		blockRepository:   blockRepository,
+		serviceRepository: serviceRepository,
 		publisher:         publisher,
 	}
 }
 
 type CreateBookingDTO struct {
-	AgendaID string
-	Window   core.Window
-	Service  core.Service
+	AgendaID  string
+	ServiceID string
+	Window    core.Window
 }
 
 func (useCase *BookingService) Book(c context.Context, dto CreateBookingDTO) (Parser, error) {
@@ -60,8 +72,12 @@ func (useCase *BookingService) Book(c context.Context, dto CreateBookingDTO) (Pa
 		ID:     primitive.NewObjectID().Hex(),
 		Window: dto.Window,
 	}
+	service, err := useCase.serviceRepository.FindByID(c, dto.ServiceID)
+	if err != nil {
+		return parser, err
+	}
 
-	fits, err := schedule.Fits(b, dto.Service)
+	fits, err := schedule.Fits(b, service)
 	if err != nil {
 		useCase.publisher.Notify(core.BookedErrorEvent{})
 		return parser, err

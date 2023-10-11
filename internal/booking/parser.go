@@ -7,6 +7,7 @@ import (
 )
 
 type BookingJSON struct {
+	ID   string `json:"id"`
 	From string `json:"from"`
 	To   string `json:"to"`
 }
@@ -35,6 +36,7 @@ func FromBooking(a BookingJSON) (Parser, error) {
 	}
 
 	parser.booking = core.Booking{
+		ID:     a.ID,
 		Window: window,
 	}
 
@@ -56,6 +58,7 @@ func (p *Parser) ToJSON() ([]byte, error) {
 
 func (p *Parser) ToJSONStruct() (BookingJSON, error) {
 	return BookingJSON{
+		ID:   p.booking.ID,
 		From: p.booking.Window.From.Format("2006-01-02 15:04:05"),
 		To:   p.booking.Window.To.Format("2006-01-02 15:04:05"),
 	}, nil

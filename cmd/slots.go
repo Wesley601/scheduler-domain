@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
 
 	"alinea.com/internal/core"
 	"alinea.com/pkg/utils"
@@ -30,10 +29,7 @@ var slotsCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		s, err := agendaService.ListSlots(context.Background(), *i, utils.Must(core.NewWindow(*f, *t)), core.Service{
-			Name:     "My Service",
-			Duration: utils.Must(time.ParseDuration("15m")),
-		})
+		s, err := agendaService.ListSlots(context.Background(), *i, *sID, utils.Must(core.NewWindow(*f, *t)))
 		if err != nil {
 			panic(err)
 		}
@@ -47,6 +43,7 @@ var slotsCmd = &cobra.Command{
 var f *string
 var t *string
 var i *string
+var sID *string
 
 func init() {
 	agendaCmd.AddCommand(slotsCmd)
@@ -54,4 +51,5 @@ func init() {
 	f = slotsCmd.Flags().StringP("from", "f", "", "when the window starts")
 	t = slotsCmd.Flags().StringP("to", "t", "", "when the window ends")
 	i = slotsCmd.Flags().StringP("id", "i", "", "agenda id")
+	sID = slotsCmd.Flags().StringP("serviceId", "s", "", "service id")
 }
