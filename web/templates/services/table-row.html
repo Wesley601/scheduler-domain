@@ -1,0 +1,9 @@
+{{define "service-row"}}
+{{range .Services}}
+<tr>
+  <th>{{.ID}}</th>
+  <td>{{.Name}}</td>
+  <td>{{.Duration}}</td>
+</tr>
+{{end}}
+{{end}}

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"alinea.com/internal/core"
+	"alinea.com/pkg/mongo"
 	"alinea.com/pkg/utils"
 )
 
@@ -14,19 +15,32 @@ type ServiceJSON struct {
 	Duration string `json:"duration"`
 }
 
+type PageJson struct {
+	Total   int64 `json:"total"`
+	Page    int   `json:"page"`
+	PerPage int   `json:"per_page"`
+}
+
 type ListServiceJSON struct {
 	Data []ServiceJSON `json:"data"`
+	Meta PageJson      `json:"meta"`
 }
 
 type ListParser struct {
-	services []core.Service
+	services mongo.ServicePage
 }
 
 func (p ListParser) FromService(a ListServiceJSON) (ListParser, error) {
 	var parser ListParser
 
+	parser.services.Pagination = mongo.Pagination{
+		Page:    a.Meta.Page,
+		PerPage: a.Meta.PerPage,
+	}
+	parser.services.Total = a.Meta.Total
+
 	for _, a := range a.Data {
-		parser.services = append(parser.services, utils.Must(assembleService(a.ID, a.Name, a.Duration)))
+		parser.services.Data = append(parser.services.Data, utils.Must(assembleService(a.ID, a.Name, a.Duration)))
 	}
 
 	return parser, nil
@@ -53,21 +67,26 @@ func (p *ListParser) ToJSON() ([]byte, error) {
 }
 
 func (p *ListParser) ToService() ([]core.Service, error) {
-	return p.services, nil
+	return p.services.Data, nil
 }
 
-func (p *ListParser) ToJSONStruct() ([]ServiceJSON, error) {
-	var listService []ServiceJSON
+func (p *ListParser) ToJSONStruct() (ListServiceJSON, error) {
+	var json ListServiceJSON
+	json.Meta = PageJson{
+		Total:   p.services.Total,
+		Page:    p.services.Page,
+		PerPage: p.services.PerPage,
+	}
 
-	for _, service := range p.services {
-		listService = append(listService, ServiceJSON{
+	for _, service := range p.services.Data {
+		json.Data = append(json.Data, ServiceJSON{
 			ID:       service.ID,
 			Name:     service.Name,
 			Duration: service.Duration.String(),
 		})
 	}
 
-	return listService, nil
+	return json, nil
 }
 
 type Parser struct {

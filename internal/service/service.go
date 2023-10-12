@@ -5,20 +5,22 @@ import (
 	"time"
 
 	"alinea.com/internal/core"
+	"alinea.com/pkg/mongo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type ServiceRepository interface {
 	Save(c context.Context, s core.Service) error
+	List(c context.Context, page mongo.ListFilter) (mongo.ServicePage, error)
 	FindByID(c context.Context, id string) (core.Service, error)
 }
 
-type serviceService struct {
+type ServiceService struct {
 	serviceRepository ServiceRepository
 }
 
-func NewServiceService(serviceRepository ServiceRepository) *serviceService {
-	return &serviceService{
+func NewServiceService(serviceRepository ServiceRepository) *ServiceService {
+	return &ServiceService{
 		serviceRepository: serviceRepository,
 	}
 }
@@ -28,7 +30,7 @@ type CreateServiceDTO struct {
 	Duration string
 }
 
-func (useCase *serviceService) Create(c context.Context, dto CreateServiceDTO) (Parser, error) {
+func (useCase *ServiceService) Create(c context.Context, dto CreateServiceDTO) (Parser, error) {
 	d, err := time.ParseDuration(dto.Duration)
 	if err != nil {
 		return Parser{}, err
@@ -51,7 +53,7 @@ func (useCase *serviceService) Create(c context.Context, dto CreateServiceDTO) (
 	return parser, nil
 }
 
-func (useCase *serviceService) FindByID(c context.Context, id string) (Parser, error) {
+func (useCase *ServiceService) FindByID(c context.Context, id string) (Parser, error) {
 	service, err := useCase.serviceRepository.FindByID(c, id)
 	if err != nil {
 		return Parser{}, err
@@ -59,6 +61,19 @@ func (useCase *serviceService) FindByID(c context.Context, id string) (Parser, e
 
 	parser := Parser{
 		service: service,
+	}
+
+	return parser, nil
+}
+
+func (useCase *ServiceService) List(c context.Context, page mongo.ListFilter) (ListParser, error) {
+	services, err := useCase.serviceRepository.List(c, page)
+	if err != nil {
+		return ListParser{}, err
+	}
+
+	parser := ListParser{
+		services: services,
 	}
 
 	return parser, nil

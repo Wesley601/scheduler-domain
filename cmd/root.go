@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 
+	"alinea.com/cmd/server"
 	"alinea.com/internal/agenda"
 	"alinea.com/internal/booking"
 	"alinea.com/pkg/mongo"
@@ -39,6 +40,8 @@ var agendaService *agenda.AgendaService
 var bookingService *booking.BookingService
 
 func init() {
+	rootCmd.AddCommand(server.ServerCmd)
+
 	client := utils.Must(mongo.NewClient(context.Background()))
 
 	bookingRepository := mongo.NewBookingRepository(client)
