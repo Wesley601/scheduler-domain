@@ -2,18 +2,17 @@ package server
 
 import (
 	"math"
-
-	"alinea.com/internal/service"
+	"strconv"
 )
 
 type PageInfo struct {
 	Number int
 }
 
-func genPageInfo(p service.PageJson) []PageInfo {
+func genPageInfo(total, perPage int64) []PageInfo {
 	var ps []PageInfo
 
-	pagesTotal := math.Ceil(float64(p.Total) / float64(p.PerPage))
+	pagesTotal := math.Ceil(float64(total) / float64(perPage))
 
 	for i := 0; i < int(pagesTotal); i++ {
 		ps = append(ps, PageInfo{
@@ -22,4 +21,17 @@ func genPageInfo(p service.PageJson) []PageInfo {
 	}
 
 	return ps
+}
+
+func parseOptionalIntQueryParam(p string, d int) (int, error) {
+	if p == "" {
+		return d, nil
+	}
+
+	result, err := strconv.Atoi(p)
+	if err != nil {
+		return 0, err
+	}
+
+	return result, nil
 }

@@ -4,6 +4,7 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package server
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/spf13/cobra"
@@ -17,6 +18,7 @@ var ServerCmd = &cobra.Command{
 	Short: "WebServer",
 	Long:  `WebServer based on HyperMedia Driven Build in chi and HTMX.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("starting web server at %s\n", *p)
 		http.ListenAndServe(*p, r)
 	},
 }

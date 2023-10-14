@@ -27,6 +27,24 @@ func NewBookingRepository(client *mongo.Client) *BookingRepository {
 	}
 }
 
+func (r *BookingRepository) FindByID(c context.Context, id string) (core.Booking, error) {
+	var b Booking
+
+	err := r.coll.FindOne(c, bson.D{{Key: "_id", Value: utils.Must(primitive.ObjectIDFromHex(id))}}).Decode(&b)
+
+	if err != nil {
+		return core.Booking{}, err
+	}
+
+	return core.Booking{
+		ID: b.ID.Hex(),
+		Window: core.Window{
+			From: b.StartAt,
+			To:   b.EndsAt,
+		},
+	}, nil
+}
+
 func (r *BookingRepository) IsAvailable(c context.Context, w core.Window) (bool, error) {
 	var b Booking
 
@@ -56,4 +74,14 @@ func (r *BookingRepository) Save(c context.Context, b core.Booking) error {
 	_, err := r.coll.InsertOne(c, bToSave)
 
 	return err
+}
+
+func (r *BookingRepository) Update(c context.Context, b core.Booking) error {
+	bToUpdate := Booking{
+		StartAt: b.Window.From,
+		EndsAt:  b.Window.To,
+	}
+	return r.coll.FindOneAndReplace(c, bson.D{{
+		Key: "_id", Value: utils.Must(primitive.ObjectIDFromHex(b.ID)),
+	}}, bToUpdate).Err()
 }

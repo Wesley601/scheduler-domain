@@ -36,13 +36,13 @@ func (c ServiceController) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	q := r.URL.Query().Get("q")
-	page, err := utils.ParseOptionalIntQueryParam(r.URL.Query().Get("page"))
+	page, err := parseOptionalIntQueryParam(r.URL.Query().Get("page"), 1)
 	if err != nil {
 		log.Println(err.Error())
 		http.Error(w, "internal Server Error", http.StatusInternalServerError)
 		return
 	}
-	perPage, err := utils.ParseOptionalIntQueryParam(r.URL.Query().Get("per_page"))
+	perPage, err := parseOptionalIntQueryParam(r.URL.Query().Get("per_page"), 10)
 	if err != nil {
 		log.Println(err.Error())
 		http.Error(w, "internal Server Error", http.StatusInternalServerError)
@@ -84,7 +84,7 @@ func (c ServiceController) List(w http.ResponseWriter, r *http.Request) {
 		Pages    []PageInfo
 	}{
 		Services: utils.Must(services.ToService()),
-		Pages:    genPageInfo(j.Meta),
+		Pages:    genPageInfo(j.Meta.Total, int64(j.Meta.PerPage)),
 	})
 }
 
