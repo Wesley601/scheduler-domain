@@ -30,7 +30,7 @@ func FromJSON(b []byte) (Parser, error) {
 func FromBooking(a BookingJSON) (Parser, error) {
 	var parser Parser
 
-	window, err := core.NewWindow(a.From, a.To)
+	window, err := core.NewWindowFromString(a.From, a.To)
 	if err != nil {
 		return parser, err
 	}

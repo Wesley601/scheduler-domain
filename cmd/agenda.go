@@ -10,6 +10,7 @@ import (
 	mongodb "go.mongodb.org/mongo-driver/mongo"
 
 	"alinea.com/internal/agenda"
+	"alinea.com/internal/app"
 	"github.com/spf13/cobra"
 )
 
@@ -36,7 +37,7 @@ var agendaCmd = &cobra.Command{
 				panic(err)
 			}
 
-			agendaService.Create(context.Background(), agenda.CreateAgendaDTO{
+			app.AgendaService.Create(context.Background(), agenda.CreateAgendaDTO{
 				Name: a.Name,
 				Slots: func() []agenda.CreateSlotDTO {
 					var slots []agenda.CreateSlotDTO
@@ -53,7 +54,7 @@ var agendaCmd = &cobra.Command{
 		}
 
 		if *g != "" {
-			s, err := agendaService.FindByID(context.Background(), *g)
+			s, err := app.AgendaService.FindByID(context.Background(), *g)
 
 			if err == mongodb.ErrNoDocuments {
 				fmt.Println("agenda not found")
@@ -73,7 +74,7 @@ var agendaCmd = &cobra.Command{
 		}
 
 		if *l {
-			s, err := agendaService.List(context.Background())
+			s, err := app.AgendaService.List(context.Background())
 			if err != nil {
 				panic(err)
 			}
@@ -89,7 +90,7 @@ var agendaCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(agendaCmd)
+	RootCmd.AddCommand(agendaCmd)
 
 	c = agendaCmd.Flags().StringP("create", "c", "", "create a new agenda")
 	g = agendaCmd.Flags().StringP("get", "g", "", "get a agenda by id")

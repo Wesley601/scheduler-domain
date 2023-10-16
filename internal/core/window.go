@@ -1,13 +1,17 @@
 package core
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Window struct {
 	From time.Time
 	To   time.Time
 }
 
-func NewWindow(from, to string) (Window, error) {
+// Create a new Window based on RFC3339 format
+func NewWindowFromString(from, to string) (Window, error) {
 	f, err := time.Parse(time.RFC3339, from)
 	if err != nil {
 		return Window{}, err
@@ -18,9 +22,17 @@ func NewWindow(from, to string) (Window, error) {
 		return Window{}, err
 	}
 
+	return NewWindow(f, t)
+}
+
+func NewWindow(from, to time.Time) (Window, error) {
+	if to.Before(from) {
+		return Window{}, fmt.Errorf("to must be after from")
+	}
+
 	return Window{
-		From: f,
-		To:   t,
+		From: from,
+		To:   to,
 	}, nil
 }
 

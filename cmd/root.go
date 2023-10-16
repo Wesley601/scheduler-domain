@@ -4,23 +4,18 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"os"
 
 	"alinea.com/cmd/server"
-	"alinea.com/internal/agenda"
-	"alinea.com/internal/booking"
-	"alinea.com/pkg/mongo"
-	"alinea.com/pkg/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 var cfgFile string
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
+// RootCmd represents the base command when called without any subcommands
+var RootCmd = &cobra.Command{
 	Use:   "scheduler",
 	Short: "scheduler domain as a cli application",
 	Long:  ``,
@@ -30,31 +25,18 @@ var rootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	err := rootCmd.Execute()
+	err := RootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
 	}
 }
 
-var agendaService *agenda.AgendaService
-var bookingService *booking.BookingService
-
 func init() {
-	rootCmd.AddCommand(server.ServerCmd)
-
-	client := utils.Must(mongo.NewClient(context.Background()))
-
-	bookingRepository := mongo.NewBookingRepository(client)
-	agendaRepository := mongo.NewAgendaRepository(client)
-	blockRepository := mongo.NewBlockRepository(client)
-	serviceRepository := mongo.NewServiceRepository(client)
-
-	bookingService = booking.NewBookingService(bookingRepository, agendaRepository, blockRepository, serviceRepository, createEventPublisher())
-	agendaService = agenda.NewAgendaService(agendaRepository, serviceRepository)
+	RootCmd.AddCommand(server.ServerCmd)
 
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.scheduler.yaml)")
+	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.scheduler.yaml)")
 }
 
 // initConfig reads in config file and ENV variables if set.

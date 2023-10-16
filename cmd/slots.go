@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 
+	"alinea.com/internal/app"
 	"alinea.com/internal/core"
 	"alinea.com/pkg/utils"
 	"github.com/spf13/cobra"
@@ -29,7 +30,7 @@ var slotsCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		s, err := agendaService.ListSlots(context.Background(), *i, *sID, utils.Must(core.NewWindow(*f, *t)))
+		s, err := app.AgendaService.ListSlots(context.Background(), *i, *sID, utils.Must(core.NewWindowFromString(*f, *t)))
 		if err != nil {
 			panic(err)
 		}

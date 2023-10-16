@@ -1,6 +1,8 @@
 package server
 
 import (
+	"html/template"
+	"io"
 	"math"
 	"strconv"
 )
@@ -34,4 +36,21 @@ func parseOptionalIntQueryParam(p string, d int) (int, error) {
 	}
 
 	return result, nil
+}
+
+type JsonData interface {
+	ToJSON() ([]byte, error)
+}
+
+func parseResponse(w io.Writer, accept, tplName string, tpl *template.Template, jd JsonData) {
+	switch accept {
+	case "application/json":
+		j, err := jd.ToJSON()
+		if err != nil {
+			w.Write([]byte("{\"message\": \"unable to parse json\"}"))
+		}
+		w.Write(j)
+	default:
+		tpl.ExecuteTemplate(w, tplName, jd)
+	}
 }

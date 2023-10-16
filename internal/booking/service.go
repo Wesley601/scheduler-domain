@@ -6,7 +6,6 @@ import (
 
 	"alinea.com/internal/core"
 	"alinea.com/pkg/event"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type BookingRepository interface {
@@ -57,27 +56,29 @@ func NewBookingService(
 type CreateBookingDTO struct {
 	AgendaID  string
 	ServiceID string
-	Window    core.Window
+	From      string
+	To        string
 }
 
 func (useCase *BookingService) Book(c context.Context, dto CreateBookingDTO) (Parser, error) {
 	var parser Parser
-	schedule, err := useCase.agendaRepository.FindByID(c, dto.AgendaID)
+	agenda, err := useCase.agendaRepository.FindByID(c, dto.AgendaID)
 	if err != nil {
 		useCase.publisher.Notify(core.BookedErrorEvent{})
 		return parser, err
 	}
 
-	b := core.Booking{
-		ID:     primitive.NewObjectID().Hex(),
-		Window: dto.Window,
+	b, err := core.CreateNewBooking(dto.From, dto.To)
+	if err != nil {
+		return parser, err
 	}
+
 	service, err := useCase.serviceRepository.FindByID(c, dto.ServiceID)
 	if err != nil {
 		return parser, err
 	}
 
-	fits, err := schedule.Fits(b, service)
+	fits, err := agenda.Fits(b, service)
 	if err != nil {
 		useCase.publisher.Notify(core.BookedErrorEvent{})
 		return parser, err
@@ -87,24 +88,10 @@ func (useCase *BookingService) Book(c context.Context, dto CreateBookingDTO) (Pa
 		return parser, fmt.Errorf("booking does not fit in schedule")
 	}
 
-	available, err := useCase.bookingRepository.IsAvailable(c, b.Window)
+	err = useCase.IsAvailable(c, b.Window)
 	if err != nil {
 		useCase.publisher.Notify(core.BookedErrorEvent{})
 		return parser, err
-	}
-
-	if !available {
-		return parser, fmt.Errorf("already booked")
-	}
-
-	available, err = useCase.blockRepository.IsAvailable(c, b.Window)
-	if err != nil {
-		useCase.publisher.Notify(core.BookedErrorEvent{})
-		return parser, err
-	}
-
-	if !available {
-		return parser, fmt.Errorf("blocked")
 	}
 
 	err = useCase.bookingRepository.Save(c, b)
@@ -114,6 +101,27 @@ func (useCase *BookingService) Book(c context.Context, dto CreateBookingDTO) (Pa
 	}
 
 	useCase.publisher.Notify(core.BookedEvent{})
-
 	return parser, err
+}
+
+func (useCase *BookingService) IsAvailable(c context.Context, w core.Window) error {
+	available, err := useCase.bookingRepository.IsAvailable(c, w)
+	if err != nil {
+		return err
+	}
+
+	if !available {
+		return fmt.Errorf("already booked")
+	}
+
+	available, err = useCase.blockRepository.IsAvailable(c, w)
+	if err != nil {
+		return err
+	}
+
+	if !available {
+		return fmt.Errorf("blocked")
+	}
+
+	return nil
 }

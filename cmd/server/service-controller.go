@@ -2,23 +2,35 @@ package server
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"html/template"
 	"log"
 	"net/http"
-	"text/template"
 
+	"alinea.com/internal/app"
 	"alinea.com/internal/core"
 	"alinea.com/internal/service"
 	"alinea.com/pkg/mongo"
 	"alinea.com/pkg/utils"
 )
 
+type SuccessResponse struct {
+	Message string `json:"message"`
+}
+
+func (s SuccessResponse) ToJSON() ([]byte, error) {
+	return json.MarshalIndent(s, "", "  ")
+}
+
 type ServiceController struct {
 	s service.ServiceService
 }
 
-func NewServiceController(r service.ServiceRepository) *ServiceController {
+func NewServiceController() *ServiceController {
+
 	return &ServiceController{
-		s: *service.NewServiceService(r),
+		s: *app.ServiceService,
 	}
 }
 
@@ -86,6 +98,10 @@ func (c ServiceController) List(w http.ResponseWriter, r *http.Request) {
 		Services: utils.Must(services.ToService()),
 		Pages:    genPageInfo(j.Meta.Total, int64(j.Meta.PerPage)),
 	})
+
+	fmt.Printf("r.Header.Get(\"Accept\"): %v\n", r.Header.Get("Accept"))
+
+	// parseResponse(w, r.Header.Get("Accept"), tpl, ts, &services)
 }
 
 func (c ServiceController) New(w http.ResponseWriter, r *http.Request) {
@@ -135,9 +151,9 @@ func (c ServiceController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ts.ExecuteTemplate(w, "success", struct {
-		Message string
-	}{
+	fmt.Printf("r.Header.Get(\"Accept\"): %v\n", r.Header.Get("Accept"))
+
+	parseResponse(w, r.Header.Get("Accept"), "success", ts, SuccessResponse{
 		Message: "Service created!",
 	})
 }
