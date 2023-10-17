@@ -17,6 +17,9 @@ func init() {
 
 	serviceController := NewServiceController()
 
+	fs := http.FileServer(http.Dir("./web/static"))
+	r.Handle("/static/*", http.StripPrefix("/static/", fs))
+
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		ts, err := template.ParseFiles("./web/templates/base.html", "./web/templates/home.html")
 		if err != nil {
