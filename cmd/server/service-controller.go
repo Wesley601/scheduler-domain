@@ -9,10 +9,8 @@ import (
 	"net/http"
 
 	"alinea.com/internal/app"
-	"alinea.com/internal/core"
 	"alinea.com/internal/service"
 	"alinea.com/pkg/mongo"
-	"alinea.com/pkg/utils"
 )
 
 type SuccessResponse struct {
@@ -84,24 +82,24 @@ func (c ServiceController) List(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	j, err := services.ToJSONStruct()
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "internal Server Error", http.StatusInternalServerError)
-		return
-	}
+	// j, err := services.ToJSONStruct()
+	// if err != nil {
+	// 	log.Println(err.Error())
+	// 	http.Error(w, "internal Server Error", http.StatusInternalServerError)
+	// 	return
+	// }
 
-	ts.ExecuteTemplate(w, tpl, struct {
-		Services []core.Service
-		Pages    []PageInfo
-	}{
-		Services: utils.Must(services.ToService()),
-		Pages:    genPageInfo(j.Meta.Total, int64(j.Meta.PerPage)),
-	})
+	// ts.ExecuteTemplate(w, tpl, struct {
+	// 	Services []core.Service
+	// 	Pages    []PageInfo
+	// }{
+	// 	Services: utils.Must(services.ToService()),
+	// 	Pages:    genPageInfo(j.Meta.Total, int64(j.Meta.PerPage)),
+	// })
 
 	fmt.Printf("r.Header.Get(\"Accept\"): %v\n", r.Header.Get("Accept"))
 
-	// parseResponse(w, r.Header.Get("Accept"), tpl, ts, &services)
+	parseResponse(w, r.Header.Get("Accept"), tpl, ts, &services)
 }
 
 func (c ServiceController) New(w http.ResponseWriter, r *http.Request) {

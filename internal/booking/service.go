@@ -54,10 +54,10 @@ func NewBookingService(
 }
 
 type CreateBookingDTO struct {
-	AgendaID  string
-	ServiceID string
-	From      string
-	To        string
+	AgendaID  string `json:"agenda_id"`
+	ServiceID string `json:"service_id"`
+	From      string `json:"from"`
+	To        string `json:"to"`
 }
 
 func (useCase *BookingService) Book(c context.Context, dto CreateBookingDTO) (Parser, error) {

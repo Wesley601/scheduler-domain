@@ -35,9 +35,7 @@ var slotsCmd = &cobra.Command{
 			panic(err)
 		}
 
-		for _, v := range s {
-			fmt.Printf("%s - %s\n", v.From, v.To)
-		}
+		fmt.Println(s.ToJSON())
 	},
 }
 

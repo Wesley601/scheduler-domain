@@ -30,34 +30,40 @@ func NewAgendaService(agendaRepository AgendaRepository, serviceRepository Servi
 	}
 }
 
-func (useCase *AgendaService) ListSlots(c context.Context, agendaId, serviceId string, w core.Window) ([]core.Window, error) {
+func (useCase *AgendaService) ListSlots(c context.Context, agendaId, serviceId string, w core.Window) (ListWindowParser, error) {
+	var parser ListWindowParser
+
 	a, err := useCase.agendaRepository.FindByID(c, agendaId)
 	if err != nil {
-		return []core.Window{}, err
+		return parser, err
 	}
 
 	s, err := useCase.serviceRepository.FindByID(c, serviceId)
 	if err != nil {
-		return []core.Window{}, err
+		return parser, err
 	}
 
 	slots, err := a.ListAvailableSlots(w, s)
 	if err != nil {
-		return []core.Window{}, err
+		return parser, err
 	}
 
-	return slots, nil
+	parser = ListWindowParser{
+		windows: slots,
+	}
+
+	return parser, nil
 }
 
 type CreateSlotDTO struct {
-	Weekday time.Weekday
-	StartAt string
-	EndsAt  string
+	Weekday time.Weekday `json:"weekday"`
+	StartAt string       `json:"start_at"`
+	EndsAt  string       `json:"ends_at"`
 }
 
 type CreateAgendaDTO struct {
-	Name  string
-	Slots []CreateSlotDTO
+	Name  string          `json:"name"`
+	Slots []CreateSlotDTO `json:"slots"`
 }
 
 func (useCase *AgendaService) Create(c context.Context, dto CreateAgendaDTO) (Parser, error) {

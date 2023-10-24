@@ -3,6 +3,7 @@ module alinea.com
 go 1.20
 
 require (
+	github.com/aws/aws-lambda-go v1.41.0
 	github.com/go-chi/chi v1.5.5
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/spf13/cobra v1.7.0
