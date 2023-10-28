@@ -9,17 +9,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type ServiceRepository interface {
-	Save(c context.Context, s core.Service) error
-	List(c context.Context, page mongo.ListFilter) (mongo.ServicePage, error)
-	FindByID(c context.Context, id string) (core.Service, error)
-}
-
 type ServiceService struct {
-	serviceRepository ServiceRepository
+	serviceRepository *mongo.ServiceRepository
 }
 
-func NewServiceService(serviceRepository ServiceRepository) *ServiceService {
+func NewServiceService(serviceRepository *mongo.ServiceRepository) *ServiceService {
 	return &ServiceService{
 		serviceRepository: serviceRepository,
 	}
@@ -30,10 +24,10 @@ type CreateServiceDTO struct {
 	Duration string
 }
 
-func (useCase *ServiceService) Create(c context.Context, dto CreateServiceDTO) (Parser, error) {
+func (useCase *ServiceService) Create(c context.Context, dto CreateServiceDTO) (*core.Service, error) {
 	d, err := time.ParseDuration(dto.Duration)
 	if err != nil {
-		return Parser{}, err
+		return nil, err
 	}
 
 	service := core.Service{
@@ -43,38 +37,26 @@ func (useCase *ServiceService) Create(c context.Context, dto CreateServiceDTO) (
 	}
 
 	if err := useCase.serviceRepository.Save(c, service); err != nil {
-		return Parser{}, err
+		return nil, err
 	}
 
-	parser := Parser{
-		service: service,
-	}
-
-	return parser, nil
+	return &service, nil
 }
 
-func (useCase *ServiceService) FindByID(c context.Context, id string) (Parser, error) {
+func (useCase *ServiceService) FindByID(c context.Context, id string) (*core.Service, error) {
 	service, err := useCase.serviceRepository.FindByID(c, id)
 	if err != nil {
-		return Parser{}, err
+		return nil, err
 	}
 
-	parser := Parser{
-		service: service,
-	}
-
-	return parser, nil
+	return &service, nil
 }
 
-func (useCase *ServiceService) List(c context.Context, page mongo.ListFilter) (ListParser, error) {
+func (useCase *ServiceService) List(c context.Context, page mongo.ListFilter) (mongo.ServicePage, error) {
 	services, err := useCase.serviceRepository.List(c, page)
 	if err != nil {
-		return ListParser{}, err
+		return mongo.ServicePage{}, err
 	}
 
-	parser := ListParser{
-		services: services,
-	}
-
-	return parser, nil
+	return services, nil
 }

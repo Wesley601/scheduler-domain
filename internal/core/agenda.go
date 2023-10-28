@@ -8,9 +8,9 @@ import (
 )
 
 type Agenda struct {
-	ID    string
-	Name  string
-	Slots []Slot
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Slots []Slot `json:"slots"`
 }
 
 func NewAgenda(id, name string, slots []Slot) *Agenda {

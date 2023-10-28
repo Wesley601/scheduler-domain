@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 
 	"alinea.com/internal/app"
@@ -15,7 +16,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		return events.APIGatewayProxyResponse{}, err
 	}
 
-	j, err := result.ToJSON()
+	j, err := json.MarshalIndent(result, "", "  ")
 	if err != nil {
 		return events.APIGatewayProxyResponse{}, err
 	}

@@ -10,8 +10,8 @@ const (
 )
 
 type Booking struct {
-	ID     string
-	Window Window
+	ID     string `json:"id"`
+	Window Window `json:"window"`
 }
 
 func CreateNewBooking(from, to string) (Booking, error) {

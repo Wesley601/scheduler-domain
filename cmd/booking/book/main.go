@@ -19,18 +19,13 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		return events.APIGatewayProxyResponse{}, err
 	}
 
-	result, err := app.BookingService.Book(context.Background(), dto)
-	if err != nil {
-		return events.APIGatewayProxyResponse{}, err
-	}
-
-	j, err := result.ToJSON()
+	err = app.BookingService.Book(context.Background(), dto)
 	if err != nil {
 		return events.APIGatewayProxyResponse{}, err
 	}
 
 	return events.APIGatewayProxyResponse{
-		Body:       string(j),
+		Body:       string("ok"),
 		StatusCode: http.StatusOK,
 	}, nil
 }

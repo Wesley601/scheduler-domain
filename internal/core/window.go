@@ -6,8 +6,8 @@ import (
 )
 
 type Window struct {
-	From time.Time
-	To   time.Time
+	From time.Time `json:"from"`
+	To   time.Time `json:"to"`
 }
 
 // Create a new Window based on RFC3339 format

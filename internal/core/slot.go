@@ -12,10 +12,10 @@ func (s SlotTime) Time(baseTime time.Time) (time.Time, error) {
 }
 
 type Slot struct {
-	Weekday  time.Weekday
-	Duration time.Duration
-	StartAt  SlotTime
-	EndsAt   SlotTime
+	Weekday  time.Weekday  `json:"weekday"`
+	Duration time.Duration `json:"duration"`
+	StartAt  SlotTime      `json:"start_at"`
+	EndsAt   SlotTime      `json:"ends_at"`
 }
 
 func NewSlot(weekday time.Weekday, startAt, endsAt SlotTime) (Slot, error) {

@@ -5,54 +5,39 @@ import (
 	"time"
 
 	"alinea.com/internal/core"
+	"alinea.com/pkg/mongo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type AgendaRepository interface {
-	FindByID(c context.Context, id string) (core.Agenda, error)
-	Save(c context.Context, s core.Agenda) error
-	List(c context.Context) ([]core.Agenda, error)
-}
-
-type ServiceRepository interface {
-	FindByID(c context.Context, id string) (core.Service, error)
-}
-
 type AgendaService struct {
-	agendaRepository  AgendaRepository
-	serviceRepository ServiceRepository
+	agendaRepository  *mongo.AgendaRepository
+	serviceRepository *mongo.ServiceRepository
 }
 
-func NewAgendaService(agendaRepository AgendaRepository, serviceRepository ServiceRepository) *AgendaService {
+func NewAgendaService(agendaRepository *mongo.AgendaRepository, serviceRepository *mongo.ServiceRepository) *AgendaService {
 	return &AgendaService{
 		agendaRepository:  agendaRepository,
 		serviceRepository: serviceRepository,
 	}
 }
 
-func (useCase *AgendaService) ListSlots(c context.Context, agendaId, serviceId string, w core.Window) (ListWindowParser, error) {
-	var parser ListWindowParser
-
+func (useCase *AgendaService) ListSlots(c context.Context, agendaId, serviceId string, w core.Window) ([]core.Window, error) {
 	a, err := useCase.agendaRepository.FindByID(c, agendaId)
 	if err != nil {
-		return parser, err
+		return []core.Window{}, err
 	}
 
 	s, err := useCase.serviceRepository.FindByID(c, serviceId)
 	if err != nil {
-		return parser, err
+		return []core.Window{}, err
 	}
 
 	slots, err := a.ListAvailableSlots(w, s)
 	if err != nil {
-		return parser, err
+		return []core.Window{}, err
 	}
 
-	parser = ListWindowParser{
-		windows: slots,
-	}
-
-	return parser, nil
+	return slots, nil
 }
 
 type CreateSlotDTO struct {
@@ -66,13 +51,13 @@ type CreateAgendaDTO struct {
 	Slots []CreateSlotDTO `json:"slots"`
 }
 
-func (useCase *AgendaService) Create(c context.Context, dto CreateAgendaDTO) (Parser, error) {
+func (useCase *AgendaService) Create(c context.Context, dto CreateAgendaDTO) (*core.Agenda, error) {
 	var slots []core.Slot
 
 	for _, slot := range dto.Slots {
 		s, err := core.NewSlot(slot.Weekday, core.SlotTime(slot.StartAt), core.SlotTime(slot.EndsAt))
 		if err != nil {
-			return Parser{}, err
+			return nil, err
 		}
 
 		slots = append(slots, s)
@@ -81,36 +66,26 @@ func (useCase *AgendaService) Create(c context.Context, dto CreateAgendaDTO) (Pa
 	agenda := core.NewAgenda(primitive.NewObjectID().Hex(), dto.Name, slots)
 
 	if err := useCase.agendaRepository.Save(c, *agenda); err != nil {
-		return Parser{}, err
+		return nil, err
 	}
 
-	parser := Parser{
-		agenda: *agenda,
-	}
-
-	return parser, nil
+	return agenda, nil
 }
 
-func (useCase *AgendaService) FindByID(c context.Context, id string) (Parser, error) {
+func (useCase *AgendaService) FindByID(c context.Context, id string) (*core.Agenda, error) {
 	agenda, err := useCase.agendaRepository.FindByID(c, id)
 	if err != nil {
-		return Parser{}, err
+		return nil, err
 	}
 
-	parser := Parser{
-		agenda: agenda,
-	}
-
-	return parser, nil
+	return &agenda, nil
 }
 
-func (useCase *AgendaService) List(c context.Context) (ListParser, error) {
-	agenda, err := useCase.agendaRepository.List(c)
+func (useCase *AgendaService) List(c context.Context) ([]core.Agenda, error) {
+	agendas, err := useCase.agendaRepository.List(c)
 	if err != nil {
-		return ListParser{}, err
+		return nil, err
 	}
 
-	return ListParser{
-		agendas: agenda,
-	}, nil
+	return agendas, nil
 }
