@@ -85,3 +85,11 @@ func (r *BookingRepository) Update(c context.Context, b core.Booking) error {
 		Key: "_id", Value: utils.Must(primitive.ObjectIDFromHex(b.ID)),
 	}}, bToUpdate).Err()
 }
+
+func (r *BookingRepository) Remove(c context.Context, b core.Booking) error {
+	_, err := r.coll.DeleteOne(c, bson.D{{
+		Key: "_id", Value: utils.Must(primitive.ObjectIDFromHex(b.ID)),
+	}})
+
+	return err
+}
