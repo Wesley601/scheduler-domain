@@ -103,6 +103,19 @@ func (useCase *BookingService) Rebook(c context.Context, dto RebookingDTO) error
 	return useCase.bookingRepository.Remove(c, oldBooking)
 }
 
+func (useCase *BookingService) Cancel(c context.Context, bookingID string) error {
+	oldBooking, err := useCase.bookingRepository.FindByID(c, bookingID)
+	if err != nil {
+		return err
+	}
+
+	if oldBooking.Window.From.Before(time.Now()) {
+		return errors.New("cannot cancel passed bookings")
+	}
+
+	return useCase.bookingRepository.Remove(c, oldBooking)
+}
+
 func (useCase *BookingService) HasSomeBlock(c context.Context, w core.Window) error {
 	available, err := useCase.bookingRepository.IsAvailable(c, w)
 	if err != nil {
