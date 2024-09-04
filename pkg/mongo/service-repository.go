@@ -24,7 +24,7 @@ type Service struct {
 
 func NewServiceRepository(client *mongo.Client) *ServiceRepository {
 	return &ServiceRepository{
-		coll: client.Database("alinea").Collection("services"),
+		coll: client.Database("base").Collection("services"),
 	}
 }
 

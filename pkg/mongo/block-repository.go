@@ -24,7 +24,7 @@ type Block struct {
 
 func NewBlockRepository(client *mongo.Client) *BlockRepository {
 	return &BlockRepository{
-		coll: client.Database("alinea").Collection("blocks"),
+		coll: client.Database("base").Collection("blocks"),
 	}
 }
 

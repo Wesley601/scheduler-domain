@@ -29,7 +29,7 @@ type Agenda struct {
 
 func NewAgendaRepository(client *mongo.Client) *AgendaRepository {
 	return &AgendaRepository{
-		coll: client.Database("alinea").Collection("agendas"),
+		coll: client.Database("base").Collection("agendas"),
 	}
 }
 

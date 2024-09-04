@@ -23,7 +23,7 @@ type Booking struct {
 
 func NewBookingRepository(client *mongo.Client) *BookingRepository {
 	return &BookingRepository{
-		coll: client.Database("alinea").Collection("bookings"),
+		coll: client.Database("base").Collection("bookings"),
 	}
 }
 
