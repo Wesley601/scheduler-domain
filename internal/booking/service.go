@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"alinea.com/internal/core"
-	"alinea.com/pkg/mongo"
+	"wesley601.com/internal/core"
+	"wesley601.com/pkg/mongo"
 )
 
 type BookingService struct {

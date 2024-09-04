@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"alinea.com/internal/app"
-	"alinea.com/internal/core"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"wesley601.com/internal/app"
+	"wesley601.com/internal/core"
 )
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {

@@ -3,11 +3,11 @@ package app
 import (
 	"context"
 
-	"alinea.com/internal/agenda"
-	"alinea.com/internal/booking"
-	"alinea.com/internal/service"
-	"alinea.com/pkg/mongo"
-	"alinea.com/pkg/utils"
+	"wesley601.com/internal/agenda"
+	"wesley601.com/internal/booking"
+	"wesley601.com/internal/service"
+	"wesley601.com/pkg/mongo"
+	"wesley601.com/pkg/utils"
 )
 
 var AgendaService *agenda.AgendaService

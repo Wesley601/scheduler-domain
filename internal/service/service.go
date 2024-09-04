@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"alinea.com/internal/core"
-	"alinea.com/pkg/mongo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"wesley601.com/internal/core"
+	"wesley601.com/pkg/mongo"
 )
 
 type ServiceService struct {

@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"alinea.com/internal/app"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"wesley601.com/internal/app"
 )
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"alinea.com/pkg/utils"
+	"wesley601.com/pkg/utils"
 )
 
 type Agenda struct {
